@@ -33,8 +33,8 @@
 
 
 gboolean on_expose (GtkWidget *widget,
-		    cairo_t* cr,
-		    gpointer user_data)
+                    cairo_t* cr,
+                    gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -54,8 +54,8 @@ gboolean on_expose (GtkWidget *widget,
 
 
 gboolean on_configure (GtkWidget *widget,
-		       GdkEventExpose *event,
-		       gpointer user_data)
+                       GdkEventExpose *event,
+                       gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -68,8 +68,8 @@ gboolean on_configure (GtkWidget *widget,
 
 
 void on_screen_changed(GtkWidget *widget,
-		       GdkScreen *previous_screen,
-		       gpointer   user_data)
+                       GdkScreen *previous_screen,
+                       gpointer   user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -87,7 +87,7 @@ void on_screen_changed(GtkWidget *widget,
 
 
 void on_monitors_changed ( GdkScreen *screen,
-			   gpointer   user_data) 
+                           gpointer   user_data) 
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -129,9 +129,9 @@ void on_monitors_changed ( GdkScreen *screen,
 
 
   data->default_pen = paint_context_new (data, GROMIT_PEN,
-					 data->red, 7, 0, 1, G_MAXUINT);
+                                         data->red, 7, 0, 1, G_MAXUINT);
   data->default_eraser = paint_context_new (data, GROMIT_ERASER,
-					    data->red, 75, 0, 1, G_MAXUINT);
+                                            data->red, 75, 0, 1, G_MAXUINT);
 
   if(!data->composited) // set shape
     {
@@ -149,7 +149,7 @@ void on_monitors_changed ( GdkScreen *screen,
 
 
 void on_composited_changed ( GdkScreen *screen,
-			   gpointer   user_data)
+                           gpointer   user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -184,10 +184,10 @@ void on_composited_changed ( GdkScreen *screen,
 
 
 void on_clientapp_selection_get (GtkWidget          *widget,
-				 GtkSelectionData   *selection_data,
-				 guint               info,
-				 guint               time,
-				 gpointer            user_data)
+                                 GtkSelectionData   *selection_data,
+                                 guint               info,
+                                 guint               time,
+                                 gpointer            user_data)
 {
   GromitData *data = (GromitData *) user_data;
   
@@ -208,9 +208,9 @@ void on_clientapp_selection_get (GtkWidget          *widget,
 
 
 void on_clientapp_selection_received (GtkWidget *widget,
-				      GtkSelectionData *selection_data,
-				      guint time,
-				      gpointer user_data)
+                                      GtkSelectionData *selection_data,
+                                      guint time,
+                                      gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -230,8 +230,8 @@ static float line_thickener = 0;
 
 
 gboolean on_buttonpress (GtkWidget *win, 
-			 GdkEventButton *ev,
-			 gpointer user_data)
+                         GdkEventButton *ev,
+                         gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
   gdouble pressure = 1;
@@ -241,7 +241,7 @@ gboolean on_buttonpress (GtkWidget *win,
 
   if(data->debug)
     g_printerr("DEBUG: Device '%s': Button %i Down State %d at (x,y)=(%.2f : %.2f)\n",
-	       gdk_device_get_name(ev->device), ev->button, ev->state, ev->x, ev->y);
+               gdk_device_get_name(ev->device), ev->button, ev->state, ev->x, ev->y);
 
   if (!devdata->is_grabbed)
     return FALSE;
@@ -251,7 +251,7 @@ gboolean on_buttonpress (GtkWidget *win,
       gdk_window_set_event_compression(gtk_widget_get_window(data->win), FALSE);
   } else {
       /* For all other source types, set back to default. Otherwise, lines were only
-	 fully drawn to the end on button release. */
+         fully drawn to the end on button release. */
       gdk_window_set_event_compression(gtk_widget_get_window(data->win), TRUE);
   }
 
@@ -271,9 +271,9 @@ gboolean on_buttonpress (GtkWidget *win,
 
   gdk_event_get_axis ((GdkEvent *) ev, GDK_AXIS_PRESSURE, &pressure);
   data->maxwidth = (CLAMP (pressure + line_thickener, 0, 1) *
-		    (double) (devdata->cur_context->width -
-			      devdata->cur_context->minwidth) +
-		    devdata->cur_context->minwidth);
+                    (double) (devdata->cur_context->width -
+                              devdata->cur_context->minwidth) +
+                    devdata->cur_context->minwidth);
 
   if(data->maxwidth > devdata->cur_context->maxwidth)
     data->maxwidth = devdata->cur_context->maxwidth;
@@ -288,14 +288,18 @@ gboolean on_buttonpress (GtkWidget *win,
 
 
 gboolean on_motion (GtkWidget *win,
-		    GdkEventMotion *ev,
-		    gpointer user_data)
+                    GdkEventMotion *ev,
+                    gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
   GdkTimeCoord **coords = NULL;
   gint nevents;
   int i;
   gdouble pressure = 1;
+
+  static gdouble xx = 0.0;
+  static gdouble yy = 0.0;
+  
   /* get the data for this device */
   GromitDeviceData *devdata = g_hash_table_lookup(data->devdatatable, ev->device);
 
@@ -310,9 +314,8 @@ gboolean on_motion (GtkWidget *win,
     select_tool (data, ev->device, gdk_event_get_source_device ((GdkEvent *) ev), ev->state);
 
   gdk_device_get_history (ev->device, ev->window,
-			  devdata->motion_time, ev->time,
-			  &coords, &nevents);
-
+                          devdata->motion_time, ev->time,
+                          &coords, &nevents);
   if(!data->xinerama && nevents > 0)
     {
       for (i=0; i < nevents; i++)
@@ -323,21 +326,23 @@ gboolean on_motion (GtkWidget *win,
                                GDK_AXIS_PRESSURE, &pressure);
           if (pressure > 0)
             {
-	      data->maxwidth = (CLAMP (pressure + line_thickener, 0, 1) *
-				(double) (devdata->cur_context->width -
-					  devdata->cur_context->minwidth) +
-				devdata->cur_context->minwidth);
+              data->maxwidth = (CLAMP (pressure + line_thickener, 0, 1) *
+                                (double) (devdata->cur_context->width -
+                                          devdata->cur_context->minwidth) +
+                                devdata->cur_context->minwidth);
 
-	      if(data->maxwidth > devdata->cur_context->maxwidth)
-		data->maxwidth = devdata->cur_context->maxwidth;
+              if(data->maxwidth > devdata->cur_context->maxwidth)
+                data->maxwidth = devdata->cur_context->maxwidth;
 
               gdk_device_get_axis(ev->device, coords[i]->axes,
                                   GDK_AXIS_X, &x);
               gdk_device_get_axis(ev->device, coords[i]->axes,
                                   GDK_AXIS_Y, &y);
-
-	      draw_line (data, ev->device, devdata->lastx, devdata->lasty, x, y);
-
+              // static gdouble xx = 0.0;
+              // static gdouble yy = 0.0;
+              // xx += (x-xx)/10.0;
+              // yy += (y-yy)/10.0;
+              draw_line (data, ev->device, devdata->lastx, devdata->lasty, x, y);
               coord_list_prepend (data, ev->device, x, y, data->maxwidth);
               devdata->lastx = x;
               devdata->lasty = y;
@@ -350,26 +355,40 @@ gboolean on_motion (GtkWidget *win,
 
   /* always paint to the current event coordinate. */
   gdk_event_get_axis ((GdkEvent *) ev, GDK_AXIS_PRESSURE, &pressure);
-
-  if (pressure > 0)
-    {
+  static gboolean reset = 1;
+  if (pressure > 0) {
       data->maxwidth = (CLAMP (pressure + line_thickener, 0, 1) *
-			(double) (devdata->cur_context->width -
-				  devdata->cur_context->minwidth) +
-			devdata->cur_context->minwidth);
+                        (double) (devdata->cur_context->width -
+                                  devdata->cur_context->minwidth) +
+                        devdata->cur_context->minwidth);
 
       if(data->maxwidth > devdata->cur_context->maxwidth)
-	data->maxwidth = devdata->cur_context->maxwidth;
+        data->maxwidth = devdata->cur_context->maxwidth;
 
-      if(devdata->motion_time > 0)
-	{
-	  draw_line (data, ev->device, devdata->lastx, devdata->lasty, ev->x, ev->y);
-	  coord_list_prepend (data, ev->device, ev->x, ev->y, data->maxwidth);
-	}
-    }
+      if(devdata->motion_time > 0) {
+          if(reset) {
+              xx = ev->x;
+              yy = ev->y;
+              reset = 0;
+          } else {
+              xx += (ev->x - xx) / 5.0;
+              yy += (ev->y - yy) / 5.0;
+          }
+          draw_line(data, ev->device, devdata->lastx, devdata->lasty, xx, yy);
+          coord_list_prepend (data, ev->device, xx, yy, data->maxwidth);
+          // draw_line (data, ev->device, devdata->lastx, devdata->lasty, ev->x, ev->y);
+          // coord_list_prepend (data, ev->device, ev->x, ev->y, data->maxwidth);
+      }
+      
+  } else {
+      reset = 1;
+  }
 
-  devdata->lastx = ev->x;
-  devdata->lasty = ev->y;
+  devdata->lastx = xx;
+  devdata->lasty = yy;
+  // devdata->lastx = ev->x;
+  // devdata->lasty = ev->y;
+  
   devdata->motion_time = ev->time;
 
   return TRUE;
@@ -377,8 +396,8 @@ gboolean on_motion (GtkWidget *win,
 
 
 gboolean on_buttonrelease (GtkWidget *win, 
-			   GdkEventButton *ev, 
-			   gpointer user_data)
+                           GdkEventButton *ev, 
+                           gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
   /* get the device data for this event */
@@ -399,7 +418,7 @@ gboolean on_buttonrelease (GtkWidget *win,
   
   if (devdata->cur_context->arrowsize != 0 &&
       coord_list_get_arrow_param (data, ev->device, width * 3,
-				  &width, &direction))
+                                  &width, &direction))
     draw_arrow (data, ev->device, ev->x, ev->y, width, direction);
 
   coord_list_free (data, ev->device);
@@ -409,10 +428,10 @@ gboolean on_buttonrelease (GtkWidget *win,
 
 /* Remote control */
 void on_mainapp_selection_get (GtkWidget          *widget,
-			       GtkSelectionData   *selection_data,
-			       guint               info,
-			       guint               time,
-			       gpointer            user_data)
+                               GtkSelectionData   *selection_data,
+                               guint               info,
+                               guint               time,
+                               gpointer            user_data)
 {
   GromitData *data = (GromitData *) user_data;
   
@@ -449,9 +468,9 @@ void on_mainapp_selection_get (GtkWidget          *widget,
 
 
 void on_mainapp_selection_received (GtkWidget *widget,
-				    GtkSelectionData *selection_data,
-				    guint time,
-				    gpointer user_data)
+                                    GtkSelectionData *selection_data,
+                                    guint time,
+                                    gpointer user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -464,34 +483,34 @@ void on_mainapp_selection_received (GtkWidget *widget,
     {
       if(gtk_selection_data_get_target(selection_data) == GA_TOGGLEDATA )
         {
-	  intptr_t dev_nr = strtoull((gchar*)gtk_selection_data_get_data(selection_data), NULL, 10);
-	  
+          intptr_t dev_nr = strtoull((gchar*)gtk_selection_data_get_data(selection_data), NULL, 10);
+          
           if(data->debug)
-	    g_printerr("DEBUG: mainapp got toggle id '%ld' back from client.\n", (long)dev_nr);
+            g_printerr("DEBUG: mainapp got toggle id '%ld' back from client.\n", (long)dev_nr);
 
-	  if(dev_nr < 0)
-	    toggle_grab(data, NULL); /* toggle all */
-	  else 
-	    {
-	      /* find dev numbered dev_nr */
-	      GHashTableIter it;
-	      gpointer value;
-	      GromitDeviceData* devdata = NULL; 
-	      g_hash_table_iter_init (&it, data->devdatatable);
-	      while (g_hash_table_iter_next (&it, NULL, &value)) 
-		{
-		  devdata = value;
-		  if(devdata->index == dev_nr)
-		    break;
-		  else
-		    devdata = NULL;
-		}
-	      
-	      if(devdata)
-		toggle_grab(data, devdata->device);
-	      else
-		g_printerr("ERROR: No device at index %ld.\n", (long)dev_nr);
-	    }
+          if(dev_nr < 0)
+            toggle_grab(data, NULL); /* toggle all */
+          else 
+            {
+              /* find dev numbered dev_nr */
+              GHashTableIter it;
+              gpointer value;
+              GromitDeviceData* devdata = NULL; 
+              g_hash_table_iter_init (&it, data->devdatatable);
+              while (g_hash_table_iter_next (&it, NULL, &value)) 
+                {
+                  devdata = value;
+                  if(devdata->index == dev_nr)
+                    break;
+                  else
+                    devdata = NULL;
+                }
+              
+              if(devdata)
+                toggle_grab(data, devdata->device);
+              else
+                g_printerr("ERROR: No device at index %ld.\n", (long)dev_nr);
+            }
         }
     }
  
@@ -500,8 +519,8 @@ void on_mainapp_selection_received (GtkWidget *widget,
 
 
 void on_device_removed (GdkDeviceManager *device_manager,
-			GdkDevice        *device,
-			gpointer          user_data)
+                        GdkDevice        *device,
+                        gpointer          user_data)
 {
   GromitData *data = (GromitData *) user_data;
     
@@ -516,8 +535,8 @@ void on_device_removed (GdkDeviceManager *device_manager,
 }
 
 void on_device_added (GdkDeviceManager *device_manager,
-		      GdkDevice        *device,
-		      gpointer          user_data)
+                      GdkDevice        *device,
+                      gpointer          user_data)
 {
   GromitData *data = (GromitData *) user_data;
 
@@ -534,14 +553,14 @@ void on_device_added (GdkDeviceManager *device_manager,
 
 
 gboolean on_toggle_paint(GtkWidget *widget,
-			 GdkEventButton  *ev,
-			 gpointer   user_data)
+                         GdkEventButton  *ev,
+                         gpointer   user_data)
 {
     GromitData *data = (GromitData *) user_data;
 
     if(data->debug)
-	g_printerr("DEBUG: Device '%s': Button %i on_toggle_paint at (x,y)=(%.2f : %.2f)\n",
-		   gdk_device_get_name(ev->device), ev->button, ev->x, ev->y);
+        g_printerr("DEBUG: Device '%s': Button %i on_toggle_paint at (x,y)=(%.2f : %.2f)\n",
+                   gdk_device_get_name(ev->device), ev->button, ev->x, ev->y);
 
     toggle_grab(data, ev->device);
 
@@ -549,7 +568,7 @@ gboolean on_toggle_paint(GtkWidget *widget,
 }
 
 void on_toggle_paint_all (GtkMenuItem *menuitem,
-			  gpointer     user_data)
+                          gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   toggle_grab(data, NULL);
@@ -557,7 +576,7 @@ void on_toggle_paint_all (GtkMenuItem *menuitem,
 
 
 void on_clear (GtkMenuItem *menuitem,
-	       gpointer     user_data)
+               gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   clear_screen(data);
@@ -565,7 +584,7 @@ void on_clear (GtkMenuItem *menuitem,
 
 
 void on_toggle_vis(GtkMenuItem *menuitem,
-		   gpointer     user_data)
+                   gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   toggle_visibility(data);
@@ -573,13 +592,13 @@ void on_toggle_vis(GtkMenuItem *menuitem,
 
 
 void on_thicker_lines(GtkMenuItem *menuitem,
-		      gpointer     user_data)
+                      gpointer     user_data)
 {
   line_thickener += 0.1;
 }
 
 void on_thinner_lines(GtkMenuItem *menuitem,
-		      gpointer     user_data)
+                      gpointer     user_data)
 {
   line_thickener -= 0.1;
   if (line_thickener < -1)
@@ -588,7 +607,7 @@ void on_thinner_lines(GtkMenuItem *menuitem,
 
 
 void on_opacity_bigger(GtkMenuItem *menuitem,
-		       gpointer     user_data)
+                       gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   data->opacity += 0.1;
@@ -598,7 +617,7 @@ void on_opacity_bigger(GtkMenuItem *menuitem,
 }
 
 void on_opacity_lesser(GtkMenuItem *menuitem,
-		       gpointer     user_data)
+                       gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   data->opacity -= 0.1;
@@ -609,14 +628,14 @@ void on_opacity_lesser(GtkMenuItem *menuitem,
 
 
 void on_undo(GtkMenuItem *menuitem,
-	     gpointer     user_data)
+             gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   undo_drawing (data);
 }
 
 void on_redo(GtkMenuItem *menuitem,
-	     gpointer     user_data)
+             gpointer     user_data)
 {
   GromitData *data = (GromitData *) user_data;
   redo_drawing (data);
@@ -624,7 +643,7 @@ void on_redo(GtkMenuItem *menuitem,
 
 
 void on_about(GtkMenuItem *menuitem,
-	      gpointer     user_data)
+              gpointer     user_data)
 {
     const gchar *authors [] = { "Christian Beier <dontmind@freeshell.org>",
                                 "Simon Budig <Simon.Budig@unix-ag.org>",
@@ -639,20 +658,20 @@ void on_about(GtkMenuItem *menuitem,
                                 "Tao Klerks <tao@klerks.biz>",
                                 "Tobias Schönberg <tobias47n9e@gmail.com>",
                                 "Yuri D'Elia <yuri.delia@eurac.edu>",
-				"Julián Unrrein <junrrein@gmail.com>",
-				"Eshant Gupta <guptaeshant@gmail.com>",
+                                "Julián Unrrein <junrrein@gmail.com>",
+                                "Eshant Gupta <guptaeshant@gmail.com>",
                                  NULL };
     gtk_show_about_dialog (NULL,
-			   "program-name", "Gromit-MPX",
-			   "logo-icon-name", "gromit-mpx",
-			   "title", _("About Gromit-MPX"),
-			   "comments", _("Gromit-MPX (GRaphics Over MIscellaneous Things - Multi-Pointer-EXtension) is an on-screen annotation tool that works with any Unix desktop environment under X11 as well as Wayland."),
-			   "version", PACKAGE_VERSION,
-			   "website", PACKAGE_URL,
-			   "authors", authors,
-			   "copyright", "2009-2020 Christian Beier, Copyright 2000 Simon Budig",
-			   "license-type", GTK_LICENSE_GPL_2_0,
-			   NULL);
+                           "program-name", "Gromit-MPX",
+                           "logo-icon-name", "gromit-mpx",
+                           "title", _("About Gromit-MPX"),
+                           "comments", _("Gromit-MPX (GRaphics Over MIscellaneous Things - Multi-Pointer-EXtension) is an on-screen annotation tool that works with any Unix desktop environment under X11 as well as Wayland."),
+                           "version", PACKAGE_VERSION,
+                           "website", PACKAGE_URL,
+                           "authors", authors,
+                           "copyright", "2009-2020 Christian Beier, Copyright 2000 Simon Budig",
+                           "license-type", GTK_LICENSE_GPL_2_0,
+                           NULL);
 }
 
 
@@ -662,7 +681,7 @@ static void on_intro_show_again_button_toggled(GtkCheckButton *toggle, GromitDat
 }
 
 void on_intro(GtkMenuItem *menuitem,
-	      gpointer user_data)
+              gpointer user_data)
 {
     GromitData *data = (GromitData *) user_data;
 
@@ -672,14 +691,14 @@ void on_intro(GtkMenuItem *menuitem,
 
     // set page one
     GtkWidget *widgetOne = gtk_label_new(_("Gromit-MPX (GRaphics Over MIscellaneous Things) is a small tool to make\n"
-					  "annotations on the screen.\n\n"
-					  "Its main use is for making presentations of some application. Normally,\n"
-					  "you would have to move the mouse pointer around the point of interest\n"
-					  "until hopefully everybody noticed it.  With Gromit-MPX, you can draw\n"
-					  "everywhere onto the screen, highlighting some button or area.\n\n"
+                                          "annotations on the screen.\n\n"
+                                          "Its main use is for making presentations of some application. Normally,\n"
+                                          "you would have to move the mouse pointer around the point of interest\n"
+                                          "until hopefully everybody noticed it.  With Gromit-MPX, you can draw\n"
+                                          "everywhere onto the screen, highlighting some button or area.\n\n"
                                           "If you happen to enjoy using Gromit-MPX, please consider supporting\n"
-					  "its development by using one of the donation options on the project's\n"
-					  "website or directly via the support options available from the tray menu.\n"));
+                                          "its development by using one of the donation options on the project's\n"
+                                          "website or directly via the support options available from the tray menu.\n"));
     gtk_assistant_append_page (GTK_ASSISTANT (assistant), widgetOne);
     gtk_assistant_set_page_title (GTK_ASSISTANT (assistant), widgetOne, _("Gromit-MPX - What is it?"));
     gtk_assistant_set_page_type (GTK_ASSISTANT (assistant), widgetOne, GTK_ASSISTANT_PAGE_INTRO);
@@ -689,20 +708,20 @@ void on_intro(GtkMenuItem *menuitem,
     GtkWidget *widgetTwo = gtk_label_new (NULL);
     char widgetTwoBuf[4096];
     snprintf(widgetTwoBuf, sizeof(widgetTwoBuf),
-	     _("You can operate Gromit-MPX using its tray icon (if your desktop environment\n"
-	     "provides a sys tray), but since you typically want to use the program you are\n"
-	     "demonstrating and highlighting something is a short interruption of your\n"
-	     "workflow, Gromit-MPX can be toggled on and off on the fly via a hotkey:\n\n"
-	     "It grabs the `%s` and `%s` keys, so that no other application can use them\n"
-	     "and they are available to Gromit-MPX only.  The available commands are:\n\n<tt><b>"
-	     "   toggle painting:         %s\n"
-	     "   clear screen:            SHIFT-%s\n"
-	     "   toggle visibility:       CTRL-%s\n"
-	     "   quit:                    ALT-%s\n"
-	     "   undo last stroke:        %s\n"
-	     "   redo last undone stroke: SHIFT-%s</b></tt>"),
-	     data->hot_keyval, data->undo_keyval,
-	     data->hot_keyval, data->hot_keyval, data->hot_keyval, data->hot_keyval, data->undo_keyval, data->undo_keyval);
+             _("You can operate Gromit-MPX using its tray icon (if your desktop environment\n"
+             "provides a sys tray), but since you typically want to use the program you are\n"
+             "demonstrating and highlighting something is a short interruption of your\n"
+             "workflow, Gromit-MPX can be toggled on and off on the fly via a hotkey:\n\n"
+             "It grabs the `%s` and `%s` keys, so that no other application can use them\n"
+             "and they are available to Gromit-MPX only.  The available commands are:\n\n<tt><b>"
+             "   toggle painting:         %s\n"
+             "   clear screen:            SHIFT-%s\n"
+             "   toggle visibility:       CTRL-%s\n"
+             "   quit:                    ALT-%s\n"
+             "   undo last stroke:        %s\n"
+             "   redo last undone stroke: SHIFT-%s</b></tt>"),
+             data->hot_keyval, data->undo_keyval,
+             data->hot_keyval, data->hot_keyval, data->hot_keyval, data->hot_keyval, data->undo_keyval, data->undo_keyval);
     gtk_label_set_markup (GTK_LABEL (widgetTwo), widgetTwoBuf);
     gtk_assistant_append_page (GTK_ASSISTANT (assistant), widgetTwo);
     gtk_assistant_set_page_title (GTK_ASSISTANT (assistant), widgetTwo, _("Gromit-MPX - How to use it"));
@@ -712,22 +731,22 @@ void on_intro(GtkMenuItem *menuitem,
     // set page three
     GtkWidget *widgetThree = gtk_grid_new ();
     GtkWidget *widgetThreeText = gtk_label_new (_("Do you want to show this introduction again on the next start of Gromit-MPX?\n"
-						  "You can always access it again via the sys tray menu.\n"));
+                                                  "You can always access it again via the sys tray menu.\n"));
     GtkWidget *widgetThreeButton = gtk_check_button_new_with_label (_("Show again on startup"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widgetThreeButton), data->show_intro_on_startup);
     gtk_grid_attach (GTK_GRID (widgetThree), widgetThreeText, 0, 0, 1, 1);
     gtk_grid_attach_next_to (GTK_GRID (widgetThree), widgetThreeButton, widgetThreeText, GTK_POS_BOTTOM, 1, 1);
     g_signal_connect (G_OBJECT (widgetThreeButton), "toggled",
-		      G_CALLBACK (on_intro_show_again_button_toggled), data);
+                      G_CALLBACK (on_intro_show_again_button_toggled), data);
     gtk_assistant_append_page (GTK_ASSISTANT (assistant), widgetThree);
     gtk_assistant_set_page_type (GTK_ASSISTANT (assistant), widgetThree, GTK_ASSISTANT_PAGE_CONFIRM);
     gtk_assistant_set_page_complete (GTK_ASSISTANT (assistant), widgetThree, TRUE);
 
     // connect the close buttons
     g_signal_connect (G_OBJECT (assistant), "cancel",
-		      G_CALLBACK (gtk_widget_destroy), NULL);
+                      G_CALLBACK (gtk_widget_destroy), NULL);
     g_signal_connect (G_OBJECT (assistant), "close",
-		      G_CALLBACK (gtk_widget_destroy), NULL);
+                      G_CALLBACK (gtk_widget_destroy), NULL);
 
     // show
     gtk_widget_show_all (assistant);
@@ -736,26 +755,26 @@ void on_intro(GtkMenuItem *menuitem,
 void on_support_liberapay(GtkMenuItem *menuitem, gpointer user_data)
 {
     gtk_show_uri_on_window (NULL,
-			    "https://liberapay.com/bk138",
-			    GDK_CURRENT_TIME,
-			    NULL);
+                            "https://liberapay.com/bk138",
+                            GDK_CURRENT_TIME,
+                            NULL);
 
 }
 
 void on_support_patreon(GtkMenuItem *menuitem, gpointer user_data)
 {
     gtk_show_uri_on_window (NULL,
-			    "https://patreon.com/bk138",
-			    GDK_CURRENT_TIME,
-			    NULL);
+                            "https://patreon.com/bk138",
+                            GDK_CURRENT_TIME,
+                            NULL);
 
 }
 
 void on_support_paypal(GtkMenuItem *menuitem, gpointer user_data)
 {
     gtk_show_uri_on_window (NULL,
-			    "https://www.paypal.com/donate?hosted_button_id=N7GSSPRPUSTPU",
-			    GDK_CURRENT_TIME,
-			    NULL);
+                            "https://www.paypal.com/donate?hosted_button_id=N7GSSPRPUSTPU",
+                            GDK_CURRENT_TIME,
+                            NULL);
 
 }
